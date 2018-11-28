@@ -29,9 +29,10 @@
 
 #import "JHTopSlideInputVC.h"
 
-@interface JHTopSlideInputVC ()
+@interface JHTopSlideInputVC ()<UITextFieldDelegate>
 @property (strong,  nonatomic) UIView           *topView;
 @property (strong,  nonatomic) UITextField      *textField;
+@property (strong,  nonatomic) UIButton         *button;
 @end
 
 @implementation JHTopSlideInputVC
@@ -41,6 +42,7 @@
     // Do any additional setup after loading the view.
     
     [self jh_setupViews];
+    
 }
 
 - (void)jh_setupViews
@@ -57,17 +59,21 @@
     
     CGFloat W = [UIScreen mainScreen].bounds.size.width;
     
+    CGFloat statusBarHeight = CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
+    CGFloat H = statusBarHeight + 80;
     UIView *view = [[UIView alloc] init];
-    view.frame = CGRectMake(0, -100, W, 100);
+    view.frame = CGRectMake(0, -H, W, H);
     view.backgroundColor = [UIColor whiteColor];
     [self.view addSubview:view];
     _topView = view;
     
     UITextField *textField = [[UITextField alloc] init];
-    textField.frame = CGRectMake(10, 25, W-20, 30);
+    textField.frame = CGRectMake(10, H-75, W-20, 30);
     textField.placeholder = @"在此输入内容";
     textField.borderStyle = 3;
     textField.clearButtonMode = 3;
+    textField.returnKeyType = UIReturnKeyDone;
+    textField.delegate = self;
     [view addSubview:textField];
     _textField = textField;
     
@@ -81,6 +87,14 @@
     [button setTitleColor:[UIColor blackColor] forState:0];
     [button addTarget:self action:@selector(jh_hide:) forControlEvents:1<<6];
     [view addSubview:button];
+    _button = button;
+}
+
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField{
+    [self jh_hide:_button];
+    return YES;
 }
 
 - (void)jh_showIn:(UIViewController *)vc{
@@ -102,7 +116,7 @@
     
     [UIView animateWithDuration:0.25 animations:^{
         CGRect frame = _topView.frame;
-        frame.origin.y = -100;
+        frame.origin.y = -120;
         _topView.frame = frame;
     } completion:^(BOOL finished) {
         if (_finishInputBlock && _textField.text.length > 0 && button) {
@@ -135,7 +149,9 @@
     // Dispose of any resources that can be recreated.
 }
 
-
+- (void)dealloc{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 /*
 #pragma mark - Navigation
